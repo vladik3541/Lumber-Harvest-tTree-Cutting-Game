@@ -14,8 +14,6 @@ public class Saw : MonoBehaviour
         this.damage = damage;
         this.speedSaw = speedSaw;
         this.intervalDamage = intervalDamage;
-        
-        UpdateSawModel(sawPrefab);
     }
     
     public void UpdateStats(float damage, float speedSaw, float intervalDamage)
@@ -25,35 +23,26 @@ public class Saw : MonoBehaviour
         this.intervalDamage = intervalDamage;
     }
     
-    public void UpdateSawModel(GameObject sawPrefab)
-    {
-        // Видалити стару модель
-        if (currentSawModel != null)
-        {
-            Destroy(currentSawModel);
-        }
-        
-        // Створити нову модель
-        if (sawPrefab != null)
-        {
-            currentSawModel = Instantiate(sawPrefab, transform);
-            currentSawModel.transform.localPosition = Vector3.zero;
-            currentSawModel.transform.localRotation = Quaternion.identity;
-        }
-    }
-
     void OnTriggerStay(Collider other)
     {
         if (other.TryGetComponent(out TreeHealth health))
         {
+            health.GetComponent<Animator>().SetBool("Hit", true);
             if (Time.time > timer)
             {
                 health.TakeDamage(damage);
+                Debug.Log("Damage saw " + damage);
                 timer = Time.time + intervalDamage;
             }
         }
     }
-
+    void OnTriggerExit(Collider other)
+    {
+        if (other.TryGetComponent(out TreeHealth health))
+        {
+            health.GetComponent<Animator>().SetBool("Hit", false);
+        }
+    }
     private void Update()
     {
         transform.Rotate(0, Time.deltaTime * speedSaw, 0);

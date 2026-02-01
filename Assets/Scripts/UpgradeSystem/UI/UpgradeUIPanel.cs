@@ -31,20 +31,16 @@ public class UpgradeUIPanel : MonoBehaviour
     
     private void Start()
     {
-        upgradeManager = PlayerUpgradeManager.Instance;
+        MoneyManager.Instance.OnChangeMoney += UpdateMoneyDisplay;
+        UpdateMoneyDisplay(MoneyManager.Instance.GetMoneyAmount());
         
-        if (upgradeManager != null)
-        {
-            upgradeManager.OnMoneyChanged += UpdateMoneyDisplay;
-            UpdateMoneyDisplay(upgradeManager.Money);
-        }
     }
     
     private void OnDestroy()
     {
         if (upgradeManager != null)
         {
-            upgradeManager.OnMoneyChanged -= UpdateMoneyDisplay;
+            MoneyManager.Instance.OnChangeMoney -= UpdateMoneyDisplay;
         }
     }
     

@@ -18,22 +18,27 @@ MonoBehaviour:
   isSawUpgrade: 0
   levels:
   - level: 0
-    value: 10
+    value: 0.8
     sawPrefab: {fileID: 0}
     cost: 0
     levelDescription: 
   - level: 1
-    value: 15
+    value: 0.75
     sawPrefab: {fileID: 0}
     cost: 100
     levelDescription: 
   - level: 2
-    value: 22
+    value: 0.7
     sawPrefab: {fileID: 0}
     cost: 200
     levelDescription: 
   - level: 3
-    value: 30
+    value: 0.65
     sawPrefab: {fileID: 0}
     cost: 400
+    levelDescription: 
+  - level: 4
+    value: 0.6
+    sawPrefab: {fileID: 0}
+    cost: 880
     levelDescription: 

@@ -19,21 +19,25 @@ MonoBehaviour:
   levels:
   - level: 0
     value: 10
-    sawPrefab: {fileID: 0}
+    sawPrefab: {fileID: 9102533357415461932, guid: e98076473dfb9bb43aa04c87157c79b3,
+      type: 3}
     cost: 0
     levelDescription: 
   - level: 1
     value: 15
-    sawPrefab: {fileID: 0}
+    sawPrefab: {fileID: 8628832211354669737, guid: 7448e9dcffbee4f439f0352b4775c702,
+      type: 3}
     cost: 100
     levelDescription: 
   - level: 2
     value: 22
-    sawPrefab: {fileID: 0}
+    sawPrefab: {fileID: 6418504928473930505, guid: 2651854f9ba59ed4ab76dd51f51058cf,
+      type: 3}
     cost: 200
     levelDescription: 
   - level: 3
     value: 30
-    sawPrefab: {fileID: 0}
+    sawPrefab: {fileID: 6418504928473930505, guid: ccf2c6f0bf8a26f40ba0c3be1c8a38ac,
+      type: 3}
     cost: 400
     levelDescription: 

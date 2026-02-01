@@ -79,13 +79,16 @@ public class LogCollector : MonoBehaviour
 
     public void StopFlyCoroutine()
     {
+        if (Inventory.Instance.GetCount() <= 0) return;
         StopCoroutine(flyCoroutine);
     }
     private IEnumerator SellLogsSequence(Transform endPosition)
     {
         while (Inventory.Instance.GetCount() > 0)
         {
-            AnimateLogSell(Inventory.Instance.RemoveWood().gameObject, endPosition.position);
+            var wood = Inventory.Instance.RemoveWood().gameObject;
+            MoneyManager.Instance.AddMoney(wood.GetComponent<Wood>().cost);
+            AnimateLogSell(wood, endPosition.position);
             yield return new WaitForSeconds(0.05f);
         }
         

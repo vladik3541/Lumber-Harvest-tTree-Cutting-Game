@@ -14,12 +14,13 @@ GameObject:
   - component: {fileID: 1244838179831774370}
   - component: {fileID: 1657366350742293738}
   - component: {fileID: 7824658249415792287}
+  - component: {fileID: -1775359672234438591}
   m_Layer: 7
   m_Name: Tree_23_Spring
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &6769077226366317702
 Transform:
@@ -146,6 +147,19 @@ MonoBehaviour:
   maxHealth: 1
   currentHealth: 5
   wood: {fileID: 9060238312793429932, guid: 3c20154749dc7494994abc3b4092601b, type: 3}
+--- !u!114 &-1775359672234438591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6157703808571875192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf9e75722de4e844089746d6e9aefdb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  treeId: 4ff73e0f-46f3-4f7c-93ae-8b18d6751ffc
 --- !u!1 &6264942541070645276
 GameObject:
   m_ObjectHideFlags: 0
@@ -162,7 +176,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &905582550012287194
 Transform:
