@@ -1,9 +1,8 @@
-using System;
 using UnityEngine;
 using DG.Tweening;
 using System.Collections;
 
-public class LogCollector : MonoBehaviour
+public class WoodStacker : MonoBehaviour
 {
     [Header("Collection Settings")]
     [SerializeField] private Transform inventoryPosition; // Куди летять колоди
@@ -12,64 +11,62 @@ public class LogCollector : MonoBehaviour
     
     [Header("Animation Settings")]
     [SerializeField] private float flyDuration = 0.8f;
-    [SerializeField] private float selFlyDuration = 0.8f;
+    [SerializeField] private float selFlyDuration = 0.2f;
     [SerializeField] private float stackDelay = 0.15f;
-    [SerializeField] private float arcHeight = 2f; // Висота дуги польоту
+    [SerializeField] private float arcHeight = 5f; // Висота дуги польоту
     
     [Header("Stack Positioning")]
     [SerializeField] private Vector3 stackOffset = new Vector3(0.3f, 0.15f, 0);
-    [SerializeField] private int logsPerRow = 3;
+    [SerializeField] private int logsPerRow = 2;
     
     [Header("Visual Effects")]
     [SerializeField] private float scaleMultiplier = 0.3f;
     [SerializeField] private float punchScale = 0.15f;
 
     private Coroutine flyCoroutine;
+    private bool isCollecting = false;
+
     public void Update()
     {
-        CollectNearbyLogs();
+        if (!isCollecting)
+            CollectNearbyLogs();
     }
 
     public void CollectNearbyLogs()
     {
         Collider[] logsInRange = Physics.OverlapSphere(transform.position, collectionRadius, logLayer);
-        
+
         if (logsInRange.Length == 0)
-        {
-            Debug.Log("Немає колод поблизу!");
             return;
-        }
 
         StartCoroutine(CollectLogsSequence(logsInRange));
     }
 
     private IEnumerator CollectLogsSequence(Collider[] logs)
     {
+        isCollecting = true;
+
         foreach (Collider logCollider in logs)
         {
             if (Inventory.Instance.OnLimited())
-            {
-                Debug.Log("Інвентар повний!");
                 yield break;
-            }
 
-            if (logCollider.gameObject.GetComponent<Wood>().isCollect) continue;
+            if (!logCollider.TryGetComponent(out Wood wood) || wood.isCollect) continue;
 
             GameObject log = logCollider.gameObject;
             
-            // Встановлюємо parent та виключаємо колізію ДО анімації
             log.transform.parent = inventoryPosition;
-            Wood wood = log.GetComponent<Wood>();
             wood.isCollect = true;
             
             // Додаємо в інвентар
             Inventory.Instance.AddWood(wood);
             
-            // Запускаємо анімацію
             AnimateLogCollection(log, Inventory.Instance.GetCount() - 1);
             
             yield return new WaitForSeconds(stackDelay);
         }
+
+        isCollecting = false;
     }
 
     public void StartSellLog(Transform endPosition)
@@ -79,8 +76,9 @@ public class LogCollector : MonoBehaviour
 
     public void StopFlyCoroutine()
     {
-        if (Inventory.Instance.GetCount() <= 0) return;
+        if (flyCoroutine == null) return;
         StopCoroutine(flyCoroutine);
+        flyCoroutine = null;
     }
     private IEnumerator SellLogsSequence(Transform endPosition)
     {

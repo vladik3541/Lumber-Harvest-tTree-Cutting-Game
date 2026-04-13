@@ -1,145 +1,154 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
-/// <summary>
-/// Спавнер світу - відповідає за створення дерев та wood об'єктів
-/// </summary>
 public class WorldSpawner : MonoBehaviour
 {
     public static WorldSpawner Instance { get; private set; }
 
     [Header("Prefabs")]
-    [SerializeField] private GameObject[] treePrefabs; // Масив префабів дерев
+    [SerializeField] private GameObject[] treePrefabs;
     [SerializeField] private GameObject woodPrefab;
 
-    [Header("Initial Spawn (New Game)")]
-    [SerializeField] private bool spawnTreesOnNewGame = true;
-    [SerializeField] private int initialTreeCount = 50;
-    [SerializeField] private Vector2 spawnAreaMin = new Vector2(-50, -50);
-    [SerializeField] private Vector2 spawnAreaMax = new Vector2(50, 50);
-    [SerializeField] private float minTreeDistance = 5f;
+    [Header("Grid Settings")]
+    [Tooltip("Кількість рядів дерев")]
+    [SerializeField] private int rows = 5;
+
+    [Tooltip("Кількість стовпців дерев")]
+    [SerializeField] private int columns = 10;
+
+    [Tooltip("Відстань між деревами по X")]
+    [SerializeField] private float spacingX = 5f;
+
+    [Tooltip("Відстань між деревами по Z")]
+    [SerializeField] private float spacingZ = 5f;
+
+    [Tooltip("Позиція першого дерева (лівий верхній кут сітки)")]
+    [SerializeField] private Vector3 startPosition = Vector3.zero;
+
+    [Tooltip("Випадковий поворот дерева по Y")]
+    [SerializeField] private bool randomRotation = true;
+
+    [Header("Spawn Sequence")]
+    [Tooltip("Затримка між спавном кожного дерева (0 = миттєво)")]
+    [SerializeField] private float spawnDelay = 0f;
 
     [Header("Parent Transforms")]
     [SerializeField] private Transform treesParent;
     [SerializeField] private Transform woodsParent;
 
+    // Доступно з Editor'а
+    public int TotalTrees => rows * columns;
+
     private Dictionary<string, GameObject> treePrefabDict;
 
     private void Awake()
     {
+        Debug.Log("[WorldSpawner] Awake");
         if (Instance == null)
-        {
             Instance = this;
-        }
         else
         {
+            Debug.LogWarning("[WorldSpawner] Duplicate detected, destroying");
             Destroy(gameObject);
+            return;
         }
 
         InitializePrefabDictionary();
         CreateParentTransforms();
+        Debug.Log($"[WorldSpawner] Ready. Prefabs: {treePrefabs.Length}, Grid: {rows}x{columns}");
     }
 
     private void InitializePrefabDictionary()
     {
         treePrefabDict = new Dictionary<string, GameObject>();
-        foreach (GameObject prefab in treePrefabs)
+        foreach (var prefab in treePrefabs)
         {
             if (prefab != null)
-            {
                 treePrefabDict[prefab.name] = prefab;
-            }
         }
     }
 
     private void CreateParentTransforms()
     {
         if (treesParent == null)
-        {
             treesParent = new GameObject("Trees").transform;
-        }
 
         if (woodsParent == null)
-        {
             woodsParent = new GameObject("Woods").transform;
-        }
     }
 
-    #region Initial World
+    #region Initial Spawn   
 
     public void SpawnInitialWorld()
     {
-        if (!spawnTreesOnNewGame)
+        Debug.Log($"[WorldSpawner] SpawnInitialWorld called. Prefabs: {treePrefabs.Length}, Grid: {rows}x{columns}, Total: {TotalTrees}");
+        if (treePrefabs.Length == 0)
+        {
+            Debug.LogError("[WorldSpawner] treePrefabs is EMPTY! Assign tree prefabs in Inspector.");
             return;
-
-        Debug.Log($"🌲 Генерація початкового світу: {initialTreeCount} дерев");
-
-        List<Vector3> spawnedPositions = new List<Vector3>();
-
-        for (int i = 0; i < initialTreeCount; i++)
-        {
-            Vector3 position = GetRandomSpawnPosition(spawnedPositions);
-            GameObject treePrefab = GetRandomTreePrefab();
-
-            if (treePrefab != null)
-            {
-                SpawnTreeAtPosition(treePrefab, position, Quaternion.Euler(0, Random.Range(0, 360), 0));
-                spawnedPositions.Add(position);
-            }
         }
 
-        Debug.Log($"✅ Світ згенеровано: {spawnedPositions.Count} дерев");
+        if (spawnDelay > 0f)
+            StartCoroutine(SpawnSequence());
+        else
+            SpawnAllInstant();
     }
 
-    private Vector3 GetRandomSpawnPosition(List<Vector3> existingPositions)
+    private void SpawnAllInstant()
     {
-        const int maxAttempts = 30;
-        
-        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        var positions = BuildGridPositions();
+        Debug.Log($"[WorldSpawner] Spawning {positions.Count} trees instantly...");
+        foreach (var pos in positions)
+            SpawnRandomTree(pos);
+
+        Debug.Log($"[WorldSpawner] Done. {positions.Count} trees spawned.");
+    }
+
+    private IEnumerator SpawnSequence()
+    {
+        var positions = BuildGridPositions();
+
+        for (int i = 0; i < positions.Count; i++)
         {
-            float x = Random.Range(spawnAreaMin.x, spawnAreaMax.x);
-            float z = Random.Range(spawnAreaMin.y, spawnAreaMax.y);
-            Vector3 position = new Vector3(x, 0, z);
+            SpawnRandomTree(positions[i]);
+            yield return new WaitForSeconds(spawnDelay);
+        }
 
-            // Перевіряємо чи не занадто близько до інших дерев
-            bool tooClose = false;
-            foreach (Vector3 existingPos in existingPositions)
-            {
-                if (Vector3.Distance(position, existingPos) < minTreeDistance)
-                {
-                    tooClose = true;
-                    break;
-                }
-            }
+        Debug.Log($"Spawned {positions.Count} trees");
+    }
 
-            if (!tooClose)
+    // Будує масив позицій по сітці: рядок за рядком, стовпець за стовпцем
+    private List<Vector3> BuildGridPositions()
+    {
+        var positions = new List<Vector3>(rows * columns);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
             {
-                // Raycast вниз щоб знайти землю
-                if (Physics.Raycast(position + Vector3.up * 100, Vector3.down, out RaycastHit hit, 200f))
-                {
-                    return hit.point;
-                }
-                return position;
+                Vector3 pos = startPosition + new Vector3(col * spacingX, 0f, row * spacingZ);
+                positions.Add(pos);
             }
         }
 
-        // Якщо не знайшли - повертаємо випадкову позицію
-        return new Vector3(
-            Random.Range(spawnAreaMin.x, spawnAreaMax.x),
-            0,
-            Random.Range(spawnAreaMin.y, spawnAreaMax.y)
-        );
+        return positions;
     }
 
-    private GameObject GetRandomTreePrefab()
+    private void SpawnRandomTree(Vector3 position)
     {
         if (treePrefabs.Length == 0)
         {
-            Debug.LogError("Немає префабів дерев!");
-            return null;
+            Debug.LogError("No tree prefabs assigned!");
+            return;
         }
 
-        return treePrefabs[Random.Range(0, treePrefabs.Length)];
+        var prefab = treePrefabs[Random.Range(0, treePrefabs.Length)];
+        var rotation = randomRotation
+            ? Quaternion.Euler(0f, Random.Range(0f, 360f), 0f)
+            : Quaternion.identity;
+
+        SpawnTreeAtPosition(prefab, position, rotation);
     }
 
     #endregion
@@ -148,98 +157,107 @@ public class WorldSpawner : MonoBehaviour
 
     public void SpawnTree(TreeSaveData data)
     {
-        GameObject prefab = GetTreePrefabByName(data.treePrefabName);
-        
+        var prefab = GetTreePrefabByName(data.treePrefabName);
         if (prefab == null)
         {
-            Debug.LogWarning($"Не знайдено префаб дерева: {data.treePrefabName}");
+            Debug.LogWarning($"Tree prefab not found: {data.treePrefabName}");
             return;
         }
 
-        GameObject tree = SpawnTreeAtPosition(
-            prefab, 
-            data.position.ToVector3(), 
+        var tree = SpawnTreeAtPosition(
+            prefab,
+            data.position.ToVector3(),
             Quaternion.Euler(data.rotation.ToVector3())
         );
 
-        // Відновлюємо здоров'я
-        TreeHealth health = tree.GetComponent<TreeHealth>();
-        if (health != null)
-        {
-            health.SetHealth(data.currentHealth);
-        }
-
-        // Встановлюємо ID
-        SaveableTree saveable = tree.GetComponent<SaveableTree>();
-        if (saveable != null)
-        {
-            saveable.SetTreeId(data.treeId);
-        }
+        tree.GetComponent<TreeHealth>()?.SetHealth(data.currentHealth);
+        tree.GetComponent<SaveableTree>()?.SetTreeId(data.treeId);
     }
 
     public void SpawnWood(WoodSaveData data)
     {
         if (woodPrefab == null)
         {
-            Debug.LogError("Wood prefab не встановлено!");
+            Debug.LogError("Wood prefab not assigned!");
             return;
         }
 
-        GameObject woodObj = Instantiate(
+        var woodObj = Instantiate(
             woodPrefab,
             data.position.ToVector3(),
             Quaternion.Euler(data.rotation.ToVector3()),
             woodsParent
         );
 
-        Wood wood = woodObj.GetComponent<Wood>();
+        var wood = woodObj.GetComponent<Wood>();
         if (wood != null)
         {
             wood.cost = data.cost;
             wood.isCollect = data.isCollected;
         }
 
-        SaveableWood saveable = woodObj.GetComponent<SaveableWood>();
-        if (saveable != null)
-        {
-            saveable.SetWoodId(data.woodId);
-        }
+        woodObj.GetComponent<SaveableWood>()?.SetWoodId(data.woodId);
     }
 
     #endregion
 
-    #region Helper Methods
+    #region Helpers
 
     private GameObject SpawnTreeAtPosition(GameObject prefab, Vector3 position, Quaternion rotation)
     {
-        GameObject tree = Instantiate(prefab, position, rotation, treesParent);
+        var tree = Instantiate(prefab, position, rotation, treesParent);
 
-        // Додаємо SaveableTree якщо його немає
         if (tree.GetComponent<SaveableTree>() == null)
-        {
             tree.AddComponent<SaveableTree>();
-        }
 
         return tree;
     }
 
     private GameObject GetTreePrefabByName(string prefabName)
     {
-        if (treePrefabDict.TryGetValue(prefabName, out GameObject prefab))
-        {
+        if (treePrefabDict.TryGetValue(prefabName, out var prefab))
             return prefab;
-        }
 
-        // Пробуємо знайти в масиві напряму
-        foreach (GameObject treePrefab in treePrefabs)
+        foreach (var p in treePrefabs)
+            if (p != null && p.name == prefabName)
+                return p;
+
+        return null;
+    }
+
+    #endregion
+
+    #region Gizmos — preview grid in Scene view
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0.2f, 0.8f, 0.2f, 0.5f);
+
+        for (int row = 0; row < rows; row++)
         {
-            if (treePrefab != null && treePrefab.name == prefabName)
+            for (int col = 0; col < columns; col++)
             {
-                return treePrefab;
+                Vector3 pos = startPosition + new Vector3(col * spacingX, 0f, row * spacingZ);
+                Gizmos.DrawSphere(pos, 0.4f);
             }
         }
 
-        return null;
+        // Рамка навколо всієї сітки
+        Vector3 gridStart = startPosition;
+        Vector3 gridEnd = startPosition + new Vector3(
+            (columns - 1) * spacingX,
+            0f,
+            (rows - 1) * spacingZ
+        );
+        Vector3 center = (gridStart + gridEnd) * 0.5f;
+        Vector3 size = new Vector3(
+            (columns - 1) * spacingX + spacingX,
+            0.1f,
+            (rows - 1) * spacingZ + spacingZ
+        );
+
+        Gizmos.color = new Color(0.2f, 0.8f, 0.2f, 0.2f);
+        Gizmos.DrawCube(center, size);
     }
 
     #endregion

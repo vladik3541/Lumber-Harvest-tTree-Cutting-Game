@@ -27,11 +27,6 @@ public class TreeHealth : MonoBehaviour
     {
         currentHealth -= damage;
 
-        if (animator != null)
-        {
-            animator.SetTrigger("Hit");
-        }
-
         if (currentHealth <= 0)
         {
             OnTreeDestroyed();

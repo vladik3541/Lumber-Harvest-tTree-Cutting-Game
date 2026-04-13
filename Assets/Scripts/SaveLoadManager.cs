@@ -284,22 +284,26 @@ public class SaveLoadManager : MonoBehaviour
 
     private void ApplyWorldData(GameSaveData saveData)
     {
-        // Видаляємо існуючі дерева та wood
-        ClearExistingWorldObjects();
+        int treeCount = saveData.worldData.trees.Count;
+        Debug.Log($"[SaveLoadManager] ApplyWorldData: {treeCount} trees in save");
 
-        // Відновлюємо дерева
-        foreach (TreeSaveData treeData in saveData.worldData.trees)
+        // Якщо збереження порожнє — спавнимо початковий світ
+        if (treeCount == 0)
         {
-            WorldSpawner.Instance?.SpawnTree(treeData);
+            Debug.LogWarning("[SaveLoadManager] Save has 0 trees -> SpawnInitialWorld()");
+            WorldSpawner.Instance?.SpawnInitialWorld();
+            return;
         }
 
-        // Відновлюємо wood об'єкти
+        ClearExistingWorldObjects();
+
+        foreach (TreeSaveData treeData in saveData.worldData.trees)
+            WorldSpawner.Instance?.SpawnTree(treeData);
+
         foreach (WoodSaveData woodData in saveData.worldData.woodObjects)
         {
-            if (!woodData.isCollected) // Тільки якщо не зібрано
-            {
+            if (!woodData.isCollected)
                 WorldSpawner.Instance?.SpawnWood(woodData);
-            }
         }
     }
 

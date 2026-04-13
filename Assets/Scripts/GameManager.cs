@@ -92,20 +92,17 @@ public class GameManager : MonoBehaviour
 
     public void InitializeNewGame()
     {
-        Debug.Log("🆕 Ініціалізація нової гри");
-        
-        // Скидаємо прогрес
+        Debug.Log("[GameManager] InitializeNewGame called");
+        Debug.Log($"[GameManager] WorldSpawner.Instance = {WorldSpawner.Instance}");
+
         if (PlayerUpgradeManager.Instance != null)
-        {
             PlayerUpgradeManager.Instance.ResetUpgrades();
-        }
-        
-        // Створюємо початковий світ
+
         if (WorldSpawner.Instance != null)
-        {
             WorldSpawner.Instance.SpawnInitialWorld();
-        }
-        
+        else
+            Debug.LogError("[GameManager] WorldSpawner.Instance is NULL! Is WorldSpawner in the scene?");
+
         OnNewGameStarted?.Invoke();
     }
 

@@ -6,7 +6,7 @@ public class SellManager : MonoBehaviour
     [SerializeField] private Transform woodEndPosition;
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out LogCollector logCollector))
+        if (other.TryGetComponent(out WoodStacker logCollector))
         {
             logCollector.StartSellLog(woodEndPosition);
         }
@@ -14,7 +14,7 @@ public class SellManager : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent(out LogCollector logCollector))
+        if (other.TryGetComponent(out WoodStacker logCollector))
         {
             logCollector.StopFlyCoroutine();
         }

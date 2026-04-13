@@ -9,18 +9,11 @@ public class Saw : MonoBehaviour
     
     private GameObject currentSawModel;
 
-    public void Initialize(float damage, float speedSaw, float intervalDamage, GameObject sawPrefab)
+    public void Initialize(float damage, float speedSaw, float hitInterval)
     {
         this.damage = damage;
         this.speedSaw = speedSaw;
-        this.intervalDamage = intervalDamage;
-    }
-    
-    public void UpdateStats(float damage, float speedSaw, float intervalDamage)
-    {
-        this.damage = damage;
-        this.speedSaw = speedSaw;
-        this.intervalDamage = intervalDamage;
+        this.intervalDamage = hitInterval;
     }
     
     void OnTriggerStay(Collider other)

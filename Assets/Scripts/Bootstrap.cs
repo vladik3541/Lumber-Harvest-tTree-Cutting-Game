@@ -70,7 +70,7 @@ public class Bootstrap : MonoBehaviour
         if (GameManager.Instance == null)
         {
             GameObject gameManager = new GameObject("GameManager");
-            gameManager.AddComponent<GameManager>();
+            gameManager.AddComponent<GameManager>().Initialize();
             Debug.Log("✅ GameManager створено");
         }
         
@@ -111,17 +111,8 @@ public class Bootstrap : MonoBehaviour
         // Чекаємо один кадр щоб сцена проініціалізувалась
         yield return new WaitForEndOfFrame();
         
-        // Якщо потрібно - завантажуємо збереження
-        if (shouldLoadSave)
-        {
-            yield return new WaitForSeconds(0.2f); // Даємо час об'єктам створитись
-            SaveLoadManager.Instance.LoadGame();
-        }
-        else
-        {
-            // Ініціалізуємо нову гру
-            GameManager.Instance?.InitializeNewGame();
-        }
+        // Ініціалізація (save/load/new game) виконується в BootstrapGame.Start()
+        // який є частиною ігрової сцени
     }
 
     // Для перезапуску гри через Bootstrap

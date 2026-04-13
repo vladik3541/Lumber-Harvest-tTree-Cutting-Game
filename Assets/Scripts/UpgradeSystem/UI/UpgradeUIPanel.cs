@@ -38,7 +38,7 @@ public class UpgradeUIPanel : MonoBehaviour
     
     private void OnDestroy()
     {
-        if (upgradeManager != null)
+        if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.OnChangeMoney -= UpdateMoneyDisplay;
         }

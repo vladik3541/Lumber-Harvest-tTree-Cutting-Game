@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7fe0df36ef841141b40c35c27fafdc3, type: 3}
   m_Name: HitInterval
   m_EditorClassIdentifier: 
-  upgradeName: Damage per second
-  description: 'Damage '
+  upgradeName: Hit interval
+  description: hit
   icon: {fileID: -230194560, guid: 249709b0b8531e043aaded92c48a8acd, type: 3}
   isSawUpgrade: 0
   levels:

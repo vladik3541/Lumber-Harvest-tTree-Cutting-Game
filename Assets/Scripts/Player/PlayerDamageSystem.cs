@@ -10,7 +10,6 @@ public class PlayerDamageSystem : MonoBehaviour
     [FormerlySerializedAs("detectionRadius")]
     [Header("Detection Settings")]
     [SerializeField] private float interval = 3f;
-    [SerializeField] private LayerMask treeLayer;
 
     [Header("Visual Settings")]
     [SerializeField] private bool showDebugGizmos = true;
@@ -18,34 +17,21 @@ public class PlayerDamageSystem : MonoBehaviour
     private PlayerUpgradeManager upgradeManager;
     private float damageTimer = 0f;
     private GameObject currentSawInstance;
-    private bool isInitialized = false;
 
     public void Initialize()
     {
-        // Чекаємо поки SaveLoadManager завантажить дані
         StartCoroutine(InitializeAfterLoad());
     }
 
     private IEnumerator InitializeAfterLoad()
     {
-        // Чекаємо один кадр щоб SaveLoadManager встиг завантажити дані
-        yield return new WaitForEndOfFrame();
+        // Чекаємо поки PlayerUpgradeManager стане доступним
+        yield return new WaitUntil(() => PlayerUpgradeManager.Instance != null);
 
         upgradeManager = PlayerUpgradeManager.Instance;
-
-        if (upgradeManager == null)
-        {
-            Debug.LogError("PlayerUpgradeManager не знайдено!");
-            yield break;
-        }
-
-        // Підписуємось на зміни апгрейдів
         upgradeManager.OnUpgradeChanged += OnUpgradesChanged;
 
-        // Створюємо початкову пилку
         UpdateSaw();
-
-        isInitialized = true;
 
         Debug.Log($"✅ PlayerDamageSystem ініціалізовано. Урон: {upgradeManager.CurrentDamagePerSecond}");
     }
@@ -66,11 +52,8 @@ public class PlayerDamageSystem : MonoBehaviour
 
     private void UpdateSaw()
     {
-        if (!isInitialized && upgradeManager == null)
-        {
-            Debug.LogWarning("UpdateSaw викликано до ініціалізації!");
+        if (upgradeManager == null)
             return;
-        }
 
         // Видаляємо стару пилку
         if (currentSawInstance != null)
@@ -108,7 +91,7 @@ public class PlayerDamageSystem : MonoBehaviour
 
         foreach (Saw saw in saws)
         {
-            saw.Initialize(damage, 300f, hitInterval, sawPrefab);
+            saw.Initialize(damage, 300f, hitInterval);
         }
 
         Debug.Log($"✅ Пилка оновлена на: {sawPrefab.name}");
