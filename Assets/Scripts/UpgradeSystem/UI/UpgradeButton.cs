@@ -65,7 +65,10 @@ public class UpgradeButton : MonoBehaviour
         
         UpdateUI();
     }
-    
+    private void OnEnable()
+    {
+        UpdateUI();
+    }
     private void OnDestroy()
     {
         if (upgradeManager != null)
@@ -83,7 +86,7 @@ public class UpgradeButton : MonoBehaviour
             return;
         
         int currentLevel = GetCurrentLevel();
-        bool isMaxLevel = currentLevel >= upgradeData.maxLevel;
+        bool isMaxLevel = currentLevel >= upgradeData.maxLevel-1;
         
         // Назва апгрейду
         if (titleText != null)
@@ -136,7 +139,7 @@ public class UpgradeButton : MonoBehaviour
             }
             else
             {
-                int cost = upgradeData.GetCost(currentLevel);
+                int cost = upgradeData.GetCost(currentLevel+1);
                 costText.text = $"${cost}";
             }
         }
@@ -160,10 +163,11 @@ public class UpgradeButton : MonoBehaviour
         else
         {
             int currentLevel = GetCurrentLevel();
-            bool canAfford = upgradeManager.CanAffordUpgrade(upgradeData, currentLevel);
-            
+            int nextCost = upgradeData.GetCost(currentLevel + 1); // ціна наступного
+            bool canAfford = MoneyManager.Instance.IsEnoughMoney(nextCost);
+
             button.interactable = canAfford;
-            
+
             if (costText != null)
                 costText.color = canAfford ? affordableColor : unaffordableColor;
         }
@@ -176,7 +180,7 @@ public class UpgradeButton : MonoBehaviour
     
     private void OnUpgradeButtonClicked()
     {
-        if (upgradeManager.TryUpgrade(upgradeType))
+        if(upgradeManager.TryUpgrade(upgradeType))
         {
             // Можна додати звук або ефект
             Debug.Log($"Прокачано {upgradeType}!");

@@ -14783,9 +14783,9 @@ MonoBehaviour:
     type: 2}
   hitIntervalUpgrade: {fileID: 11400000, guid: 395b4cd62da4c124a9d033900c6135b8, type: 2}
   sawCountUpgrade: {fileID: 11400000, guid: 6c32a200dd76f664285694ddd6b3532d, type: 2}
-  damagePerSecondLevel: 1
-  hitIntervalLevel: 1
-  sawCountLevel: 1
+  damagePerSecondLevel: 0
+  hitIntervalLevel: 0
+  sawCountLevel: 0
 --- !u!4 &618613676
 Transform:
   m_ObjectHideFlags: 0

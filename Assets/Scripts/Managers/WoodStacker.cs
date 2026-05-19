@@ -49,7 +49,11 @@ public class WoodStacker : MonoBehaviour
         foreach (Collider logCollider in logs)
         {
             if (Inventory.Instance.OnLimited())
+            {
+                isCollecting = false;
                 yield break;
+            }
+                
 
             if (!logCollider.TryGetComponent(out Wood wood) || wood.isCollect) continue;
 

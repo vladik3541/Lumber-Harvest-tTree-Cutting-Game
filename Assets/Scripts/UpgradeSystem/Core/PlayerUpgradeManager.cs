@@ -11,9 +11,9 @@ public class PlayerUpgradeManager : MonoBehaviour
     public UpgradeData sawCountUpgrade;
 
     [Header("Current Stats")]
-    [SerializeField] private int damagePerSecondLevel = 0;
-    [SerializeField] private int hitIntervalLevel = 0;
-    [SerializeField] private int sawCountLevel = 0;
+    [SerializeField] private int damagePerSecondLevel = 1;
+    [SerializeField] private int hitIntervalLevel = 1;
+    [SerializeField] private int sawCountLevel = 1;
 
     public event Action OnUpgradeChanged;
     public event Action<int> OnMoneyChanged;
@@ -116,8 +116,8 @@ public class PlayerUpgradeManager : MonoBehaviour
     /// </summary>
     public void LoadUpgradesFromSave(int damage, int interval, int saw)
     {
-        damagePerSecondLevel = damage;
-        hitIntervalLevel = interval;
+        damagePerSecondLevel = Mathf.Max(1, damage);
+        hitIntervalLevel = Mathf.Max(1, interval);
         sawCountLevel = saw;
 
         OnUpgradeChanged?.Invoke();
